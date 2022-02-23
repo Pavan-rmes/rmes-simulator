@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+input:checked ~ .dot1 {
+    transform: translateX(100%);
+    background-color: #48bb78;
+  }
+  
+
+@media (max-width:500px){
+    .config{
+        margin-right: 50px;
+    }
+    .main{
+        flex-direction: column;
+    }
+    .tafoimg{
+        margin-left: 0px;
+    }
+    .display{
+        margin-left:25%;
+        margin-bottom: 20px;
+    }
+}

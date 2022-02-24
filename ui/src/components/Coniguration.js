@@ -19,7 +19,9 @@ export function Coniguration({id}) {
       setRegulation(data.data.regulation);
       setLoadPercentage(data.data.loadpercentage);
       setPort(data.data.port);
-      data.data.automatic ? setAutomatic("yes") : setAutomatic("no");
+      if(data.data.automatic == 1){setAutomatic("yes");}
+      else if(data.data.automatic == 2){setAutomatic("no")}
+      else{setAutomatic("csv")}
       });
   },[])
   const [portErr, setPortErr] = useState(false);
@@ -48,6 +50,7 @@ export function Coniguration({id}) {
         <select value={automatic} onChange={(event) => setAutomatic(event.target.value)} className='py-2 mb-14 pr-10 pl-2 border rounded leading-tight'>
           <option value={"no"}>Manual Load set</option>
           <option value={"yes"}>LoadCurve</option>
+          <option value={"csv"}>From csv</option>
         </select>
         <label className="block mb-2" for="username">
           % of Loading (0-130)

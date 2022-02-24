@@ -143,21 +143,63 @@ import fs from "fs"
 import path, { resolve } from "path"
 import csv from 'fast-csv'
 
-let data;
-async function pushDetails(){
+function getDayDiff(date1,date2){
+  let firstDay = date1.toLocaleDateString()
+  let lastDay = date2.toLocaleDateString()
+  return (+lastDay.split("/")[0] - +firstDay.split("/")[0])
+}
+
+function minDifferene(date1,date2){
+  let [hr1,min1,sec1] = date1.split(" ")[0].split(":")
+  let [hr2,min2,sec2] = date2.split(" ")[0].split(":")
+  if(+hr1 == 12){hr1=0;};
+  if(+hr2 == 12){hr1=0;};
+  const timeDiff = (hr2-hr1)*60+(min2-min1)
+  return timeDiff
+}
+
+function parseDate(date){
+  const [time,period] =  date.split(" ")
+  const [hr,min,sec] = time.split(":")
+  return [hr,min,sec,period]
+}
+
+function compareTime(currentTime,time){
+  let [chr,cmin,csec,cperiod] = parseDate(currentTime)
+  let [hr,min,sec,period] = parseDate(time)
+  console.log(currentTime,time)
+  if(cperiod !== period)
+  {return true;}
+  else
+  {
+    const timDiff = minDifferene(time,currentTime)
+    if(timDiff>=0){
+      return true;
+    }
+    else{
+      return false;
+    }
+  }
+}
+
+async function loadDetails(file){
   return new Promise((resolve,reject)=>{
-    const Data = []
-    fs.createReadStream("./src/csv-files/sample.csv")
+    const Data = [];let count =0;let id
+    fs.createReadStream(`./src/csv-files/${file}.csv`)
     .pipe(csv.parse({ headers: true }))
     .on('error', error => console.error(error))
-    .on('data', row => 
-    { const date = new Date(row.date);
-      row.date = date.toLocaleTimeString();
-      Data.push(row) })
-    .on('end', rowCount =>{resolve(Data); console.log(`Parsed ${rowCount} rows`)});
+    .on('data', (row) => 
+    //convert the csv file time to the time stamp
+    { const date = new Date(row.date);let currentDate = new Date();
+      row.date = date;
+      //compare it with current time
+      !id?(compareTime(currentDate.toLocaleTimeString(),date.toLocaleTimeString())?id = count:null):null
+      Data.push(row);count++; })
+    .on('end', rowCount =>{resolve([Data,id]);});
   })
 }
 
-export {pushDetails}
+
+export {getDayDiff,loadDetails,parseDate,compareTime,minDifferene}
 // pushDetails()
 // .then((data)=>console.log(data))

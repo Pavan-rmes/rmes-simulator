@@ -5,7 +5,7 @@ import cors from "cors"
 import axios from "axios";
 import socketIOClient from "socket.io-client";
 import realTimeRouter from "./realtime.js";
-import { pushDetails } from "./hepler.js";
+import { loadDetails,parseDate,compareTime,minDifferene, getDayDiff } from "./helper.js";
 
 const app = express()
 
@@ -42,7 +42,12 @@ let fankBank4Threshold = 75
 // power in MVA
 let loadPowerRatingofTransformer = 100
 
-let automaticLoadGeneration = true;
+let automaticLoadGeneration = 1;
+//automaticLoadGeneration 
+//1 - automatic
+//2 - manual
+//3 - from csv
+
 
 let ambientTemp = 35
 
@@ -428,8 +433,9 @@ SocketActivation(modbusPort)
 
 async function TagsGeneration(){
 
-    if(automaticLoadGeneration){
-        while(automaticLoadGeneration){
+    if(automaticLoadGeneration === 1){
+        //automatic load generation based on load
+        while(automaticLoadGeneration === 1){
             let date =new Date().toLocaleTimeString()
             let [time,timePeriod] = date.split(" ")
             let [hr,min,sec] = time.split(":")
@@ -547,15 +553,50 @@ async function TagsGeneration(){
 
         }
     }
-    else{
-        // if(topOilTemp>=fankBank1Threshold*100){
-            //Fankbank 
-        
-        // }
-        // CalculateTags()
-        // FanBank(topOilTemp)
-        pushDetails()
-        .then((data)=>console.log(data))
+    else if(automaticLoadGeneration === 2){
+        //Manual load generation
+        CalculateTags()
+        FanBank(topOilTemp)
+    }
+    else if(automaticLoadGeneration === 3){
+        loadDetails("load")
+        .then(async (data)=>{
+            let [loadData,id] = data
+            while(automaticLoadGeneration === 3){
+                
+                //Total time in min is diff bewteen to consecutive times
+                const currentDate = new Date();let nextid;let totalMin
+                
+                //At the last the next id will bo=e zero
+                id == loadData.length-1?nextid = 0:nextid=id+1
+
+                //The time difference will be calculated for two consecutive
+                if(nextid != 0){
+                     totalMin = Math.abs(loadData[nextid].date - loadData[id].date)/(1000*60)
+                }
+                
+                //At edge condition the next date will be the first row time and next day
+                else{
+                    let days = getDayDiff(loadData[nextid].date,loadData[id].date)
+                    let nextDay = new Date(loadData[nextid].date.getTime() + (days+1)*24*60*60*1000)
+                    totalMin = Math.abs(nextDay - loadData[id].date)/(1000*60)
+                }
+                
+                //minute is claculated between the present time and the current row 
+                //which is just less than the current time
+                const minutes =  minDifferene(loadData[id].date.toLocaleTimeString(),currentDate.toLocaleTimeString())
+                loadpecentage = Math.abs(parseFloat(loadData[id].loadpower)+((parseFloat(loadData[nextid].loadpower)-parseFloat(loadData[id].loadpower))/(+totalMin))*(+minutes)).toFixed(2)
+                console.log(minutes,totalMin,id,loadpecentage,topOilTemp)
+                CalculateTags()
+                
+                //sleep for 1 sec
+                await sleep(1000)
+                
+                //compute whether the current time is greater than the next row time
+                //If yes it will increment by 1 index
+                compareTime(currentDate.toLocaleTimeString(),loadData[nextid].date.toLocaleTimeString())?id =nextid:null
+            }
+        })
     }
 
 }
@@ -605,7 +646,7 @@ function TopOilCal(loadpecentage){
         topOilTemp = newtopOilTemp
     }
     else{
-        if(!(newtopOilTemp-topOilTemp>0.2 && topOilTemp-newtopOilTemp >0.2)){
+        if(!(newtopOilTemp-topOilTemp>0.02 && topOilTemp-newtopOilTemp >0.2)){
             topOilTemp = newtopOilTemp
         }
     }
@@ -748,7 +789,7 @@ function CalculateTapPos(voltage){
     else if(voltage>=219 && voltage <225){
         return 6
     }
-    else if(voltage>=225 && voltage <231){
+    else if(voltage>=225 && voltage <loadvoltageRatingofTransformer){
         return 5
     }
     else if(voltage>=231 && voltage <236){
@@ -843,15 +884,27 @@ function randomBetweenTwoNumbers(min,max){
 }
 
 function LoadVoltageCal(voltageRegulation){
-    return (231-(2.31*voltageRegulation))
+    return (loadvoltageRatingofTransformer-(2.31*voltageRegulation))
 }
 
 TagsGeneration()
 
 function ChangeValues(regulation,automatic,load){
     voltageRegulation = regulation
-    automaticLoadGeneration=false
-    automatic=== "yes"?automaticLoadGeneration=true:automaticLoadGeneration=false
+    
+    automaticLoadGeneration= 4
+    // stops the generation and will start if config changes
+
+    if(automatic === "csv"){
+        automaticLoadGeneration = 3;
+    }
+    else if(automatic === "no"){
+        automaticLoadGeneration = 2;
+    }
+    else{
+        automaticLoadGeneration = 1;
+    }
+    
     loadpecentage = parseFloat(load)
     TagsGeneration()
 }
@@ -859,7 +912,7 @@ function ChangeValues(regulation,automatic,load){
 function changeDgaValues(dgaValues){
     console.log(dgaValues)
     H2 = (+dgaValues.H2)*100;C2H6=(+dgaValues.C2H6)*100;CH4=(+dgaValues.CH4)*100;C2H4=(+dgaValues.C2H4)*100;C2H2=(+dgaValues.C2H2)*100
-    TagsGeneration()
+    automaticLoadGeneration===2?TagsGeneration():null
 }
 
 function ChangeAmbTemp(ambTemp){
@@ -900,7 +953,7 @@ function changeNameplate(rating){
     frequency= rating?.fq;
     ratedCurrent = rating?.rcurr
     wndgTempAtRatedLoad = rating?.wndTemp
-    TagsGeneration()
+    automaticLoadGeneration === 2?TagsGeneration():null
 }
 
 export function getFanbankStatus(){
@@ -915,7 +968,6 @@ export function ChangeFanbankStatus(status){
 
 
 const socket  = socketIOClient("http://127.0.0.1:8000/notify")
-socket.emit("test","hello from trafo")
 socket.on("success",(arg)=>socket.disconnect())
 
 export {ChangeValues,SocketActivation,SocketDeactivate,GetValues,changeDgaValues,getPresentPort,ChangeAmbTemp,GetNameplateValues,changeNameplate}

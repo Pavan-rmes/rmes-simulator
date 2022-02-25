@@ -13,6 +13,11 @@ export function Coniguration({id}) {
   const value = useContext(context)
   value.runstatus = true
   value.status=automatic==="yes"?true:false
+  const [portErr, setPortErr] = useState(false);
+  const [loadErr, setLoadErr] = useState(false);
+  const [csvLoad,setCsvLoad] = useState(false)
+  const [csvTopOil,setCsvTopOil] = useState(false)
+
   useEffect(()=>{
     axios.get(`${API}:${9000}/trafo?id=${id}`)
     .then((data) => {
@@ -24,14 +29,18 @@ export function Coniguration({id}) {
       else{setAutomatic("csv")}
       });
   },[])
-  const [portErr, setPortErr] = useState(false);
-  const [loadErr, setLoadErr] = useState(false);
+
   function checkInputValues() {
     let portResult = false;
     let loadResult = false;
     if (+port < 50000) { setPortErr(true); portResult = false; } else { setPortErr(false); portResult = true; }
     if (+loadPercentage > 0 && +loadPercentage < 130) { setLoadErr(false); loadResult = true; } else { setLoadErr(true); loadResult = false; }
     return portResult && loadResult ? true : false;
+  }
+
+  function setSimMode(event){
+    // setCsvTopOil(false);setCsvLoad(false);
+    setAutomatic(event.target.value)
   }
   return (
     <>
@@ -47,11 +56,23 @@ export function Coniguration({id}) {
         <label className="block text-gray-700  mb-2" for="username">
           Load Simulation Mode
         </label>
-        <select value={automatic} onChange={(event) => setAutomatic(event.target.value)} className='py-2 mb-14 pr-10 pl-2 border rounded leading-tight'>
+        <select value={automatic} onChange={(event) => setSimMode(event)} className='py-2 mb-4 pr-10 pl-2 border rounded leading-tight'>
           <option value={"no"}>Manual Load set</option>
           <option value={"yes"}>LoadCurve</option>
           <option value={"csv"}>From csv</option>
         </select>
+        <div className="mb-8">
+          <div className={`flex gap-x-5 ${automatic === "csv"?"block":"hidden"}`}>
+            <div onClick={(e)=>setCsvLoad(!(csvLoad))}>
+              <input checked={csvLoad}  type="checkbox"></input>
+              <label className="ml-2" for="username">load</label>
+            </div>
+            <div onClick={(e)=>{setCsvTopOil(!csvTopOil)}}>
+              <input checked={csvTopOil}  type="checkbox"></input>
+              <label className="ml-2" for="username">top oil</label>
+            </div>
+          </div>
+        </div>
         <label className="block mb-2" for="username">
           % of Loading (0-130)
         </label>
@@ -74,8 +95,9 @@ export function Coniguration({id}) {
           <button
             style={{ marginLeft: "30%", marginBottom: "20%" }}
             onClick={() => {
-              value.runstatus = !value.runstatus
-              checkInputValues() ? SendRequest(id,loadErr,regulation, loadPercentage, port, automatic, setAutomatic, setPort, setLoadPercentage, setRegulation) : console.log("unexpected error");
+              value.runstatus = !value.runstatus;
+              console.log(csvLoad,csvTopOil);
+              checkInputValues() ? SendRequest(id,csvTopOil,csvLoad,loadErr,regulation, loadPercentage, port, automatic) : console.log("unexpected error");
             }}
             className="bg-transparent mt-20 hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded">
             SET LOAD 
@@ -87,17 +109,17 @@ export function Coniguration({id}) {
 }
 
 
-export function SendRequest(id,loadErr,regulation,loadPercentage,port,automatic,setAutomatic,setPort,setLoadPercentage,setRegulation){
+export function SendRequest(id,csvTopOil,csvLoad,loadErr,regulation,loadPercentage,port,automatic){
     var myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
-  
     var raw = JSON.stringify({
       "regulation": regulation,
       "port": port,
       "automatic":automatic,
       "percentage": loadPercentage,
+      csvLoad,csvTopOil
     });
-  
+
     var requestOptions = {
       method: 'POST',
       headers: myHeaders,

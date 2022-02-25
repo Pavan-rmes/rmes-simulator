@@ -11,6 +11,7 @@ import tarfoImg from "./images/transformerModel1.jpg";
 import { useHistory, useParams } from "react-router-dom/cjs/react-router-dom.min";
 import loadcurve from "./images/load_Curve1.jpg"
 
+
 function App() {
   // const location = useLocation()
   const id = +window.location.href.split("=")[1]
@@ -92,4 +93,5 @@ function LoadCurve(){
     </div>
   )
 }
+
 

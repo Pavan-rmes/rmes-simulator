@@ -153,15 +153,38 @@ function minDifferene(date1,date2){
   let [hr1,min1,sec1] = date1.split(" ")[0].split(":")
   let [hr2,min2,sec2] = date2.split(" ")[0].split(":")
   if(+hr1 == 12){hr1=0;};
-  if(+hr2 == 12){hr1=0;};
+  if(+hr2 == 12){hr2=0;};
   const timeDiff = (hr2-hr1)*60+(min2-min1)
   return timeDiff
 }
+
+let No = process.argv[2]
 
 function parseDate(date){
   const [time,period] =  date.split(" ")
   const [hr,min,sec] = time.split(":")
   return [hr,min,sec,period]
+}
+
+function compareCurrentTime(currentTime,time){
+  let [chr,cmin,csec,cperiod] = parseDate(currentTime)
+  let [hr,min,sec,period] = parseDate(time)
+  console.log(currentTime,time)
+  if(cperiod == period)
+  {
+    const timDiff = minDifferene(time,currentTime)
+    console.log(timDiff)
+    if(timDiff>=0){
+      return true;
+    }
+    else{
+      return false;
+    }
+  }
+  else
+  {
+    return false;
+  }
 }
 
 function compareTime(currentTime,time){
@@ -185,21 +208,23 @@ function compareTime(currentTime,time){
 async function loadDetails(file){
   return new Promise((resolve,reject)=>{
     const Data = [];let count =0;let id
-    fs.createReadStream(`./src/csv-files/${file}.csv`)
+    let rs = fs.createReadStream(`./src/csv-files/${No}/${file}.csv`)
+    .on('error', error => reject("cannot read file"))
     .pipe(csv.parse({ headers: true }))
-    .on('error', error => console.error(error))
+    .on('error', error => reject("parsing error"))
     .on('data', (row) => 
     //convert the csv file time to the time stamp
     { const date = new Date(row.date);let currentDate = new Date();
       row.date = date;
       //compare it with current time
-      !id?(compareTime(currentDate.toLocaleTimeString(),date.toLocaleTimeString())?id = count:null):null
+      id == undefined?(compareCurrentTime(currentDate.toLocaleTimeString(),date.toLocaleTimeString())?id = count:null):null
+      console.log(id)
       Data.push(row);count++; })
     .on('end', rowCount =>{resolve([Data,id]);});
   })
 }
 
 
-export {getDayDiff,loadDetails,parseDate,compareTime,minDifferene}
+export {getDayDiff,loadDetails,parseDate,compareTime,minDifferene,compareCurrentTime}
 // pushDetails()
 // .then((data)=>console.log(data))

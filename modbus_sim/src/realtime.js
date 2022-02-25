@@ -4,12 +4,11 @@ import express from "express";
 
 const realTimeRouter = Router();
 
-realTimeRouter.post("/",express.json(),(req,res)=>{
+realTimeRouter.post("/",express.json(),async (req,res)=>{
     const filter = req.body
     console.log(filter)
-    const {regulation,port,automatic,percentage} = filter
+    const {regulation,port,automatic,percentage,csvTopOil,csvLoad} = filter
     let load = percentage
-    res.send(GetValues())
     if(getPresentPort() === +port) {
         'pass'
     }
@@ -17,8 +16,8 @@ realTimeRouter.post("/",express.json(),(req,res)=>{
         SocketDeactivate()
         SocketActivation(+port)
     }
-    ChangeValues(regulation,automatic,load)
-    
+    await ChangeValues(regulation,automatic,load,csvTopOil,csvLoad)
+    res.send(GetValues())
 })
 
 realTimeRouter.get("/",(req,res)=>{

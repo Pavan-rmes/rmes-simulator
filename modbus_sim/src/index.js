@@ -5,7 +5,7 @@ import cors from "cors"
 import axios from "axios";
 import socketIOClient from "socket.io-client";
 import realTimeRouter from "./realtime.js";
-import { loadDetails,parseDate,compareTime,minDifferene, getDayDiff } from "./helper.js";
+import { loadDetails,parseDate,compareTime,minDifferene, getDayDiff, compareCurrentTime } from "./helper.js";
 
 const app = express()
 
@@ -110,6 +110,11 @@ let C2H6; let MST ; let CO2; let C2H2;
 
 //Transformer name
 let trafoName ="Trafo 4"
+
+//reading the data of csv files and put the data for it self
+let loadFromCsv = false;let topOilFromCsv = false;
+
+
 
 
 axios.get(`http://api.openweathermap.org/data/2.5/weather?zip=507002,IN&appid=43aa700123b6e84a6be0c446132dd5fa`)
@@ -434,6 +439,7 @@ SocketActivation(modbusPort)
 async function TagsGeneration(){
 
     if(automaticLoadGeneration === 1){
+        topOilFromCsv = false;loadFromCsv = false
         //automatic load generation based on load
         while(automaticLoadGeneration === 1){
             let date =new Date().toLocaleTimeString()
@@ -554,56 +560,105 @@ async function TagsGeneration(){
         }
     }
     else if(automaticLoadGeneration === 2){
+        //Do not read it from the csv file
+        topOilFromCsv = false;loadFromCsv = false
+
         //Manual load generation
         CalculateTags()
         FanBank(topOilTemp)
     }
     else if(automaticLoadGeneration === 3){
+        //load power
+        if(loadFromCsv){
         loadDetails("load")
-        .then(async (data)=>{
-            let [loadData,id] = data
-            while(automaticLoadGeneration === 3){
-                
-                //Total time in min is diff bewteen to consecutive times
-                const currentDate = new Date();let nextid;let totalMin
-                
-                //At the last the next id will bo=e zero
-                id == loadData.length-1?nextid = 0:nextid=id+1
+            .then(async (data)=>{
+                let [loadData,id] = data
+                while(automaticLoadGeneration === 3){
+                    
+                    //Total time in min is diff bewteen to consecutive times
+                    const currentDate = new Date();let nextid;let totalMin
+                    
+                    //At the last the next id will bo=e zero
+                    id == loadData.length-1?nextid = 0:nextid=id+1
 
-                //The time difference will be calculated for two consecutive
-                if(nextid != 0){
-                     totalMin = Math.abs(loadData[nextid].date - loadData[id].date)/(1000*60)
+                    //The time difference will be calculated for two consecutive
+                    if(nextid != 0){
+                        totalMin = Math.abs(loadData[nextid].date - loadData[id].date)/(1000*60)
+                    }
+                    
+                    //At edge condition the next date will be the first row time and next day
+                    else{
+                        let days = getDayDiff(loadData[nextid].date,loadData[id].date)
+                        let nextDay = new Date(loadData[nextid].date.getTime() + (days+1)*24*60*60*1000)
+                        totalMin = Math.abs(nextDay - loadData[id].date)/(1000*60)
+                    }
+                    
+                    //minute is claculated between the present time and the current row 
+                    //which is just less than the current time
+                    const minutes =  minDifferene(loadData[id].date.toLocaleTimeString(),currentDate.toLocaleTimeString())
+                    loadpecentage = Math.abs(parseFloat(loadData[id].loadpower)+((parseFloat(loadData[nextid].loadpower)-parseFloat(loadData[id].loadpower))/(+totalMin))*(+minutes)).toFixed(2)
+                    console.log(minutes,totalMin,id,loadpecentage,topOilTemp)
+                    CalculateTags()
+                    
+                    //sleep for 1 sec
+                    //compute whether the current time is greater than the next row time
+                    //If yes it will increment by 1 index
+                    compareCurrentTime(currentDate.toLocaleTimeString(),loadData[nextid].date.toLocaleTimeString())?id =nextid:await sleep(1000)
                 }
-                
-                //At edge condition the next date will be the first row time and next day
-                else{
-                    let days = getDayDiff(loadData[nextid].date,loadData[id].date)
-                    let nextDay = new Date(loadData[nextid].date.getTime() + (days+1)*24*60*60*1000)
-                    totalMin = Math.abs(nextDay - loadData[id].date)/(1000*60)
+            })
+            .catch((e)=>{console.log(e,"of load csv");automaticLoadGeneration = 1;TagsGeneration()})
+        }
+
+        //top oil temp
+        console.log(topOilFromCsv)
+        if(topOilFromCsv){
+            loadDetails("load")
+            .then(async (data)=>{
+                let [loadData,id] = data
+                while(automaticLoadGeneration === 3){
+                    
+                    //Total time in min is diff bewteen to consecutive times
+                    const currentDate = new Date();let nextid;let totalMin
+                    
+                    //At the last the next id will bo=e zero
+                    id == loadData.length-1?nextid = 0:nextid=id+1
+
+                    //The time difference will be calculated for two consecutive
+                    if(nextid != 0){
+                        totalMin = Math.abs(loadData[nextid].date - loadData[id].date)/(1000*60)
+                    }
+                    
+                    //At edge condition the next date will be the first row time and next day
+                    else{
+                        let days = getDayDiff(loadData[nextid].date,loadData[id].date)
+                        let nextDay = new Date(loadData[nextid].date.getTime() + (days+1)*24*60*60*1000)
+                        totalMin = Math.abs(nextDay - loadData[id].date)/(1000*60)
+                    }
+                    
+                    //minute is claculated between the present time and the current row 
+                    //which is just less than the current time
+                    const minutes =  minDifferene(loadData[id].date.toLocaleTimeString(),currentDate.toLocaleTimeString())
+                    topOilTemp = (Math.abs(parseFloat(loadData[id].loadpower)+((parseFloat(loadData[nextid].loadpower)-parseFloat(loadData[id].loadpower))/(+totalMin))*(+minutes)).toFixed(2))*100
+                    console.log(minutes,totalMin,id,loadpecentage,topOilTemp)
+                    CalculateTags()
+                    
+                    //sleep for 1 sec
+                    await sleep(1000)
+                    
+                    //compute whether the current time is greater than the next row time
+                    //If yes it will increment by 1 index
+                    compareCurrentTime(currentDate.toLocaleTimeString(),loadData[nextid].date.toLocaleTimeString())?id =nextid:null
                 }
-                
-                //minute is claculated between the present time and the current row 
-                //which is just less than the current time
-                const minutes =  minDifferene(loadData[id].date.toLocaleTimeString(),currentDate.toLocaleTimeString())
-                loadpecentage = Math.abs(parseFloat(loadData[id].loadpower)+((parseFloat(loadData[nextid].loadpower)-parseFloat(loadData[id].loadpower))/(+totalMin))*(+minutes)).toFixed(2)
-                console.log(minutes,totalMin,id,loadpecentage,topOilTemp)
-                CalculateTags()
-                
-                //sleep for 1 sec
-                await sleep(1000)
-                
-                //compute whether the current time is greater than the next row time
-                //If yes it will increment by 1 index
-                compareTime(currentDate.toLocaleTimeString(),loadData[nextid].date.toLocaleTimeString())?id =nextid:null
-            }
-        })
+            })
+            .catch((e)=>{console.log(e,"of top oil temp");topOilFromCsv = false})
+        }
     }
 
 }
 
 function CalculateTags(){
     // new top oil calculated from load
-    TopOilCal(loadpecentage)
+    !topOilFromCsv?TopOilCal(loadpecentage):null
         
     //Load power and current
     LoadPowerCurrent(loadpecentage)
@@ -889,14 +944,16 @@ function LoadVoltageCal(voltageRegulation){
 
 TagsGeneration()
 
-function ChangeValues(regulation,automatic,load){
+async function ChangeValues(regulation,automatic,load,csvTopOil,csvLoad){
     voltageRegulation = regulation
     
-    automaticLoadGeneration= 4
+    automaticLoadGeneration= "none"
     // stops the generation and will start if config changes
-
+    await sleep(1000)
     if(automatic === "csv"){
         automaticLoadGeneration = 3;
+        loadFromCsv = csvLoad
+        topOilFromCsv = csvTopOil
     }
     else if(automatic === "no"){
         automaticLoadGeneration = 2;

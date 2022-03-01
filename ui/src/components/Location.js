@@ -7,11 +7,9 @@ export function Location({ id }) {
   const [code, setCode] = useState("IN");
   const [zip, setZip] = useState(507002); 
   const [ambTemp,setAmbTemp] = useState(35)
-  setInterval(()=>{
-    getLocation()
-  },1000*60)
+  
   function getLocation() {
-    axios.get(`http://api.openweathermap.org/data/2.5/weather?zip=${zip},${code}&appid=43aa700123b6e84a6be0c446132dd5fa`)
+    axios.get(`http://api.openweathermap.org/data/2.5/weather?zip=${zip},${code}&appid=f91bb102f1b55828d75f21a6e4af9ab9`)
       .then(data => {
         axios.post(`${API}:${9000 + id}/trafo/ambtemp`, {
           ambTemp: (+(data.data.main.temp) - 273).toFixed(2)
@@ -19,7 +17,11 @@ export function Location({ id }) {
         setAmbTemp((+(data.data.main.temp) - 273).toFixed(2))
       }).catch((err)=>console.log("cannot get the ambient temp"));
   }
-  useEffect(()=>{getLocation()},[])
+  useEffect(()=>{
+    setInterval(()=>{
+      getLocation()
+    },1000*60*10)
+    getLocation()},[])
   return (
     <div className="flex flex-wrap">
       <div>
@@ -43,7 +45,7 @@ export function Location({ id }) {
         className="border border-green-500 mt-4 hover:text-white hover:bg-green-500 rounded-xl px-4 ">Save</button>
       </div>
       </div>
-      <p className=" border rounded-2xl py-4 md:pt-10 px-2 ml-8 mr-20">Ambient Temp:- {ambTemp}</p>
+      <p className=" border rounded-2xl py-4 md:pt-10 px-2 ml-8 mr-20">Ambient Temp:- {ambTemp} °C</p>
       <img className="ml-auto mr-32" src={rmes} />
     </div>
   );

@@ -27,6 +27,9 @@ export function Coniguration({id}) {
       if(data.data.automatic == 1){setAutomatic("yes");}
       else if(data.data.automatic == 2){setAutomatic("no")}
       else{setAutomatic("csv")}
+      setCsvLoad(data.data.loadFromCsv);
+      setCsvTopOil(data.data.topOilFromCsv)
+      console.log(data)
       });
   },[])
 

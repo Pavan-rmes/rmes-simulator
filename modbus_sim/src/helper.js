@@ -150,11 +150,17 @@ function getDayDiff(date1,date2){
 }
 
 function minDifferene(date1,date2){
-  let [hr1,min1,sec1] = date1.split(" ")[0].split(":")
-  let [hr2,min2,sec2] = date2.split(" ")[0].split(":")
+  let timeDiff;
+  let [hr1,min1,sec1,period1] = parseDate(date1)
+  let [hr2,min2,sec2,period2] = parseDate(date2)
   if(+hr1 == 12){hr1=0;};
   if(+hr2 == 12){hr2=0;};
-  const timeDiff = (hr2-hr1)*60+(min2-min1)
+  if(period1 != period2){
+    timeDiff = 12*60 - (hr1-hr2)*60+(min2-min1)
+  }
+  else{
+    timeDiff = (hr2-hr1)*60+(min2-min1)
+  }
   return timeDiff
 }
 
@@ -187,23 +193,23 @@ function compareCurrentTime(currentTime,time){
   }
 }
 
-function compareTime(currentTime,time){
-  let [chr,cmin,csec,cperiod] = parseDate(currentTime)
-  let [hr,min,sec,period] = parseDate(time)
-  console.log(currentTime,time)
-  if(cperiod !== period)
-  {return true;}
-  else
-  {
-    const timDiff = minDifferene(time,currentTime)
-    if(timDiff>=0){
-      return true;
-    }
-    else{
-      return false;
-    }
-  }
-}
+// function compareTime(currentTime,time){
+//   let [chr,cmin,csec,cperiod] = parseDate(currentTime)
+//   let [hr,min,sec,period] = parseDate(time)
+//   console.log(cperiod,period)
+//   if(cperiod !== period)
+//   {console.log(time);return true;}
+//   else
+//   {
+//     const timDiff = minDifferene(time,currentTime)
+//     if(timDiff>=0){
+//       return true;
+//     }
+//     else{
+//       return false;
+//     }
+//   }
+// }
 
 async function loadDetails(file){
   return new Promise((resolve,reject)=>{
@@ -225,6 +231,6 @@ async function loadDetails(file){
 }
 
 
-export {getDayDiff,loadDetails,parseDate,compareTime,minDifferene,compareCurrentTime}
+export {getDayDiff,loadDetails,parseDate,minDifferene,compareCurrentTime}
 // pushDetails()
 // .then((data)=>console.log(data))

@@ -5,7 +5,7 @@ import cors from "cors"
 import axios from "axios";
 import socketIOClient from "socket.io-client";
 import realTimeRouter from "./realtime.js";
-import { loadDetails,parseDate,compareTime,minDifferene, getDayDiff, compareCurrentTime } from "./helper.js";
+import { loadDetails,parseDate,minDifferene, getDayDiff, compareCurrentTime } from "./helper.js";
 
 const app = express()
 
@@ -109,7 +109,7 @@ let C2H6; let MST ; let CO2; let C2H2;
 
 
 //Transformer name
-let trafoName ="Trafo 4"
+let trafoName = `Trafo ${No}`
 
 //reading the data of csv files and put the data for it self
 let loadFromCsv = false;let topOilFromCsv = false;
@@ -752,8 +752,10 @@ function WindingTemp(topOilTemp){
 function TapPos(topOilTemp){
     //load volatge change in kv
     let loadVolatge= LoadVoltageCal(voltageRegulation)
+    console.log(loadVolatge,"load voltage")
     //OLTC Tap Position
     let newtapPosition = CalculateTapPos(loadVolatge)
+    console.log(newtapPosition,"tap pos")
 
     OLTCTopOil = topOilTemp + randomBetweenTwoNumbers(100,150)
 
@@ -828,7 +830,7 @@ function capacitanceCal(){
 
 function CalculateTapPos(voltage){
 
-    
+    console.log(voltage,"voltage")
     if(voltage<203){
         return 10
     }
@@ -844,7 +846,7 @@ function CalculateTapPos(voltage){
     else if(voltage>=219 && voltage <225){
         return 6
     }
-    else if(voltage>=225 && voltage <loadvoltageRatingofTransformer){
+    else if(voltage>=225 && voltage <loadvoltageRatingofTransformer/1000){
         return 5
     }
     else if(voltage>=231 && voltage <236){
@@ -939,7 +941,7 @@ function randomBetweenTwoNumbers(min,max){
 }
 
 function LoadVoltageCal(voltageRegulation){
-    return (loadvoltageRatingofTransformer-(2.31*voltageRegulation))
+    return ((loadvoltageRatingofTransformer/1000)-(2.31*voltageRegulation))
 }
 
 TagsGeneration()
@@ -982,7 +984,8 @@ function GetValues(){
         port:modbusPort,
         automatic:automaticLoadGeneration,
         loadpercentage:loadpecentage,
-        C2H4:C2H4/100,CH4:CH4/100,C2H2:C2H2/100,CO2:CO2/100,C2H6:C2H6/100,O2:O2,CO:CO/100,MST:MST/100,H2:H2/100
+        C2H4:C2H4/100,CH4:CH4/100,C2H2:C2H2/100,CO2:CO2/100,C2H6:C2H6/100,O2:O2,CO:CO/100,MST:MST/100,H2:H2/100,
+        loadFromCsv,topOilFromCsv
     })
 }
 

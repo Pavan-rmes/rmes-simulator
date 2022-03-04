@@ -1,4 +1,4 @@
-import React,{createContext, useContext, useEffect, useReducer, useState} from "react";
+import React,{createContext, useContext, useReducer} from "react";
 import './App.css';
 import { DiasplaySide } from "./components/DiasplaySide";
 import { Coniguration } from "./components/Coniguration";
@@ -10,20 +10,8 @@ import {AuthRoute} from "./Authroute"
 import tarfoImg from "./images/transformerModel1.jpg";
 import { useHistory, useParams } from "react-router-dom/cjs/react-router-dom.min";
 import loadcurve from "./images/load_Curve1.jpg"
-import { Line } from 'react-chartjs-2';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-} from 'chart.js';
-import { API } from "./utility";
-import socketIOClient from "socket.io-client";
-
+import { RealtimGraph } from "./RealtimGraph";
+import {assetTypes} from "./Authroute"
 
 function App() {
   // const location = useLocation()
@@ -47,9 +35,8 @@ function App() {
   );
 }
 
-const assetData=[{name:"Transformer-1",port:1},{name:"Transformer-2",port:2},{name:"Transformer-3",port:3},{name:"Transformer-4",port:4}]
-
 function Assets(){
+  const assetData= assetTypes()
   return(
     <div className=" md:ml-20 flex gap-x-20 flex-wrap gap-y-10">
       {assetData.map((asset,id)=>(<AssetTemp key={id} asset={asset} /> ))}
@@ -82,7 +69,7 @@ function Transformer(){
       </div>
         <Location id = {id} />
         <hr className="mt-5 md:mx-20" />
-        <div className='main flex flex-wrap mt-5 ml-4 md:ml-16'>
+        <div className='main flex flex-wrap mt-5 ml-4 md:ml-0'>
           <context.Provider value={{status:true}}>
           <NamePlate id={id} />
           <Coniguration id={id}  />
@@ -113,82 +100,9 @@ function LoadCurve(){
 
 
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-);
-
-export const options = {
-  responsive: true,
-  plugins: {
-    legend: {
-      position: 'top',
-    },
-    title: {
-      display: true,
-      text: 'real time chart',
-    },
-  },
-};
 
 
-function RealtimGraph({id}){
-  const [displayValues,setDisplayValues] = useState([])
-  const [labels,setlabels] = useState([])
-  useEffect(() => {
-    const ENDPOINT = `${API}:${8000}/notify`;
-    console.log(ENDPOINT)
-    const socket = socketIOClient(ENDPOINT);
-    socket.on("FromAPI", data => {
-      setDisplayValues(data[`Fromtx${id}`])
-    });
-    return () => socket.disconnect();
-  }, []);
-  return(
-    <RealTimeData id ={id} labels={labels} displayValues={displayValues} setlabels={setlabels} />
-  )
-}
 
-function RealTimeData({id,labels,displayValues,setlabels}){
-  const [data1,setData] = useState([])
-  // setData([...data1],()=>console.log(data1))
-  const data = {
-    labels,
-    datasets: [
-      {
-        lineTension: 0.2,
-        label: 'top_oil_temp',
-        data: data1,
-        borderColor: 'rgb(255, 99, 132)',
-        backgroundColor: 'rgba(255, 99, 132, 0.5)',
-      }
-      
-    ],
-  };
-  console.log(data1,displayValues.topOilTemp)
-  useEffect(()=>{
-    let date = new Date()
-      if(displayValues.topOilTemp !=NaN){
-        if(data1.length>15){
-          setData([...data1.filter((d,id)=> id !=0),(displayValues.topOilTemp)/100])
-          setlabels([...labels.filter((d,id)=> id !=0),date.toLocaleTimeString()])
-        }
-        else{
-          setData([...data1,(+displayValues.topOilTemp)/100])
-          setlabels([...labels,date.toLocaleTimeString()])
-        }
-      }
-  },[displayValues])
-  return(
-    <div >
-      <Line height="250" data={data} options={options} />
-    </div>
-  )
-}
+
 
 

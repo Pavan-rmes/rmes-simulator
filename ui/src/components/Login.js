@@ -13,9 +13,20 @@ export function Login() {
   d.setTime(d.getTime() + (24*60*60*1000));
   let expires = "expires="+ d.toUTCString();
   
+  const db = [
+    {email:"bhanu@sim.com",pass:"bhanu@rmes"},
+    {email:"ravi@sim.com",pass:"ravi@rmes"},
+    {email:"prema@sim.com",pass:"prema@rmes"},
+    {email:"tabish@sim.com",pass:"tabish@rmes"},
+    {email:"system@sim.com",pass:"system@rmes"},
+
+  ]
+
+
+
   function loginButton(){
-    console.log("sign in clicked",email,password)
-    if(email ==="demo@rmes.com" && password === "test"){
+    const isValid = db.filter((cred)=>(cred.email ===email && cred.pass ===password ))[0]
+    if(isValid){
       localStorage.setItem("email",email)
       document.cookie = `email=${email};${expires};`
       history.push("/trafo")

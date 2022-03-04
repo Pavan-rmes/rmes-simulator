@@ -102,7 +102,7 @@ export function Coniguration({id}) {
               console.log(csvLoad,csvTopOil);
               checkInputValues() ? SendRequest(id,csvTopOil,csvLoad,loadErr,regulation, loadPercentage, port, automatic) : console.log("unexpected error");
             }}
-            className="bg-transparent mt-20 hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded">
+            className="bg-transparent mt-20 hover:bg-blue-600 text-blue-600 font-semibold hover:text-white py-2 px-4 border border-blue-600 hover:border-transparent rounded">
             SET LOAD 
           </button>
         </div>

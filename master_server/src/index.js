@@ -27,37 +27,38 @@ function sleep(time){
 const server = http.createServer(app);
 const io = new socketIo(server,{ cors: { origin: '*' } });
 
-const trafoKeys = ["Fromtx1","Fromtx2","Fromtx3","Fromtx4"]
+const trafoKeys = [100,101,102,103,200,201,202,203,300,301,302,303,400,401,402,403,500,501,502,503,600,601,602,603]
 
 const getNamePlate = ["nptx1","nptx2","nptx3"]
 
 let realTimeData={};let namePlateData = {};
 io.of("/notify").on("connection", (socket) => {
-  let interval;
+
   //Connected
   console.log("New client connected");
 
   //get the real time data ans set it to a variable
-  trafoKeys.map((tx,id)=>(socket.on(tx,(arg)=>realTimeData[tx] = arg)))
+  trafoKeys.map((tx,id)=>(socket.on("Fromtx"+tx,(arg)=>{realTimeData["Fromtx"+tx] = arg})))
 
   //get nameplate  details
-  getNamePlate.map((np,id)=>(socket.on(np,(arg)=>{namePlateData[np] = arg;console.log(namePlateData)})))
+  getNamePlate.map((np,id)=>(socket.on("Fromtx"+np,(arg)=>{namePlateData[np] = arg})))
 
-  //Send realtime data upstream
-  interval = setInterval(() => {sendData(socket,realTimeData)}, 1000);
+  trafoKeys.map((tx,id)=>sendData(tx,socket,realTimeData,id))
 
   //Send nameplate data upstream
  //socket.on("npData",socket.emit("npData",namePlateData))
 
+  
+});
+
+const sendData = (tx,socket,realTimeData,id)=>{
+  let interval;
+  interval = setInterval(() => {socket.emit(`FromAPI${tx}`,realTimeData[`Fromtx${tx}`])}, 1000);
   //Client disconnected
   socket.on("disconnect", () => {
     console.log("Client disconnected");
     clearInterval(interval);
   });
-});
-
-const sendData = (socket,realTimeData)=>{
-    socket.emit("FromAPI",realTimeData)
 }
 
 server.listen(8000,()=>{console.log("socket port is",8000)})

@@ -38,7 +38,7 @@ export function Location({ id }) {
         <p>Zip Code:</p>
         <input
           onChange={(e) => setZip(e.target.value)}
-          value={zip} className="outline-none w-24 md:w-auto border-b-2 focus:border-b-blue-500" placeholder="zipcode" />
+          value={zip} className="outline-none w-28 md:w-32 border-b-2 focus:border-b-blue-500" placeholder="zipcode" />
         </div>
       <button
         onClick={() => getLocation()}

@@ -6,9 +6,11 @@ import axios from "axios";
 import socketIOClient from "socket.io-client";
 import realTimeRouter from "./realtime.js";
 import { loadDetails,parseDate,minDifferene, getDayDiff, compareCurrentTime } from "./helper.js";
+import dotenv from "dotenv"
 
 const app = express()
 
+dotenv.config()
 
 app.use(cors())
 app.use("/trafo",realTimeRouter)
@@ -23,15 +25,15 @@ let fankBank2Status
 let fankBank3Status
 let fankBank4Status 
 
-let fankBank1Current
-let fankBank2Current
-let fankBank3Current
-let fankBank4Current 
+let fankBank1Current = 0;
+let fankBank2Current = 0;
+let fankBank3Current = 0;
+let fankBank4Current = 0;
 
 let No = process.argv[2]
 
 //modbus port 
-let modbusPort = 50000+(+No)
+let modbusPort = +(process.env.MODBUS_PORT)+(+No)
 
 //Fan bank threshold values
 let fankBank1Threshold = 60
@@ -566,6 +568,7 @@ async function TagsGeneration(){
         //Manual load generation
         CalculateTags()
         FanBank(topOilTemp)
+        updateRegisterValues()
     }
     else if(automaticLoadGeneration === 3){
         //load power
@@ -902,18 +905,33 @@ function FanBank(topOilTemp){
         fankBank3Status = 1
         fankBank4Status = 1
     }
+    fanbankCurrent()
+}
 
+function fanbankCurrent(){
     if(fankBank1Status ===1){
         fankBank1Current = randomBetweenTwoNumbers(386,396)
+    }
+    else{
+        fankBank1Current=0;
     }
     if(fankBank2Status ===1){
         fankBank2Current = randomBetweenTwoNumbers(386,396)
     }
+    else{
+        fankBank2Current =0;
+    }
     if(fankBank3Status ===1){
         fankBank3Current = randomBetweenTwoNumbers(386,396)
     }
+    else{
+        fankBank3Current=0;
+    }
     if(fankBank4Status ===1){
         fankBank4Current = randomBetweenTwoNumbers(386,396)
+    }
+    else{
+        fankBank4Current =0;
     }
 }
 
@@ -1027,20 +1045,29 @@ export function ChangeFanbankStatus(status){
 }
 
 
-const socket  = socketIOClient("http://127.0.0.1:8000/notify")
+const socket  = socketIOClient(process.env.SOCKET_URL)
 socket.on("success",(arg)=>socket.disconnect())
 
 export {ChangeValues,SocketActivation,SocketDeactivate,GetValues,changeDgaValues,getPresentPort,ChangeAmbTemp,GetNameplateValues,changeNameplate}
 
 const getApiAndEmit = socket => {
-    const response = {topOilTemp,wndTemp,tapPosition:tapPosition*100}
+    const response = {
+        maintank:{topOilTemp:[topOilTemp,0.01],wndTemp:[wndTemp,0.01],loadCurrent:[loadCurrent,1],loadPower:[loadPower,0.01]},
+        coolsys:{FB1InletTemp:[FB1InletTemp,0.01],FB1OutletTemp:[FB1OutletTemp,0.01],FB1TempDiff:[FB1TempDiff,0.01],
+                fankBank1Status:[fankBank1Status,1],fankBank1Current:[fankBank1Current,0.01],
+                fankBank2Status:[fankBank2Status,1],fankBank2Current:[fankBank2Current,0.01]},
+        oltc:{oltcIRCurr:[oltcIRCurr,0.01],oltcMtrPower:[oltcMtrPower,0.01],OLTCTopOil:[OLTCTopOil,0.01],
+                oltcVoltage:[oltcVoltage,1],oltcSSCurrent:[oltcSSCurrent,0.01],tapPosition:[tapPosition,1],oltcMtrTorque:[oltcMtrTorque,0.01]},
+        bush:{MVBush1Cap:[MVBush1Cap,1],LVBush1Cap:[LVBush1Cap,1],HVBush1Cap:[HVBush1Cap,1],
+                MVBush1tand:[MVBush1tand,0.001],LVBush1tand:[LVBush1tand,0.001],HVBush1tand:[HVBush1tand,0.001]}
+}
     socket.emit(`Fromtx${No}`, response);
 };
 const interval = setInterval(()=>getApiAndEmit(socket),1000)
 
 // getApiAndEmit(socket)
 
-app.listen(9000+(+No),console.log("app is listening on ",9000+(+No)))
+app.listen((+process.env.API_PORT)+(+No),console.log("app is listening on ",(+process.env.API_PORT)+(+No)))
 
 
 

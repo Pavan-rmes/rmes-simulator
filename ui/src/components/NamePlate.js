@@ -4,7 +4,7 @@ import axios from "axios";
 import { useEffect, useState } from 'react';
 
 
-export const nameplate = [{value:"Asset Name",units:"",sym:"name"},{value:"MVA",units:"MVA",sym:"lpow"},{value:"AMPERES",units:"A",sym:"rcurr"},{value:"LOAD VOLTAGE",units:"KV",sym:"lvol"},{value:"Oil Temp At Rated Load",units:"°C",sym:"toTemp"},{value:"Wnd Temp At Rated Load",units:"°C",sym:"wndTemp"},{value:"FREQUENCY",units:"Hz",sym:"fq"}]
+export const nameplate = [{value:"Asset Name",units:"",sym:"name"},{value:"MVA",units:"MVA",sym:"lpow"},{value:"AMPERES",units:"A",sym:"rcurr"},{value:"LOAD VOLTAGE",units:"KV",sym:"lvol"},{value:"Oil Temp At Rated Load",units:"°C",sym:"toTemp"},{value:"Wdg Temp At Rated Load",units:"°C",sym:"wndTemp"},{value:"FREQUENCY",units:"Hz",sym:"fq"}]
 
 
 export function NamePlate({ id }) {
@@ -30,7 +30,7 @@ export function NamePlate({ id }) {
       </div>
       <button
         onClick={() => sendRating()}
-        className="border border-green-500 hover:text-white hover:bg-green-500 px-4 py-2 rounded-xl ml-32 md:ml-24 mt-5">Save</button>
+        className="border border-green-500 hover:text-white hover:bg-green-500 px-4 py-2 rounded ml-32 md:ml-24 mt-5">Save</button>
     </div>
   );
 }

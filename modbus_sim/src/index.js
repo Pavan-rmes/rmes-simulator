@@ -33,7 +33,7 @@ let fankBank4Current = 0;
 let No = process.argv[2]
 
 //modbus port 
-let modbusPort = +(process.env.MODBUS_PORT)+(+No)
+let modbusPort = +(50000)+(+No)
 
 //Fan bank threshold values
 let fankBank1Threshold = 60
@@ -434,8 +434,13 @@ function SocketActivation(modbusPort){
     serverSocket.listen(modbusPort,()=>{console.log("server bound")})
 }
 
-
+console.log(modbusPort)
 SocketActivation(modbusPort)
+
+
+function incrementalValuegen(min,max,minutes){
+    return (min+(((max-min)/60)*minutes))
+}
 
 
 async function TagsGeneration(){
@@ -450,50 +455,50 @@ async function TagsGeneration(){
             //For morning the load varing will be
             if(timePeriod === "am" || timePeriod === "AM"){
                 if(hr==="0"){
-                    loadpecentage  = randomBetweenTwoNumbers(35,40)
+                    loadpecentage  = incrementalValuegen(35,40,min)
                 }
             
                 else if(hr==="1"){
-                    loadpecentage  = randomBetweenTwoNumbers(35,40)
+                    loadpecentage  = incrementalValuegen(35,40,min)
                 }
             
                 else if(hr==="2"){
-                    loadpecentage  = randomBetweenTwoNumbers(37,42)
+                    loadpecentage  = incrementalValuegen(37,42,min)
                 }
             
                 else if(hr==="3"){
-                    loadpecentage  = randomBetweenTwoNumbers(40,46)
+                    loadpecentage  = incrementalValuegen(40,46,min)
                 }
             
                 else if(hr==="4"){
-                    loadpecentage  = randomBetweenTwoNumbers(45,50)
+                    loadpecentage  = incrementalValuegen(45,50,min)
                 }
             
                 else if(hr==="5"){
-                    loadpecentage  = randomBetweenTwoNumbers(50,57)
+                    loadpecentage  = incrementalValuegen(50,57,min)
                 }
             
                 else if(hr==="6"){
-                    loadpecentage  = randomBetweenTwoNumbers(50,60)
+                    loadpecentage  = incrementalValuegen(50,60,min)
                 }
             
                 else if(hr==="7"){
-                    loadpecentage  = randomBetweenTwoNumbers(60,65)
+                    loadpecentage  = incrementalValuegen(60,65,min)
                 }
             
                 else if(hr==="8"){
-                    loadpecentage  = randomBetweenTwoNumbers(55,62)
+                    loadpecentage  = incrementalValuegen(55,62,min)
                 }
             
                 else if(hr==="9"){
-                    loadpecentage  = randomBetweenTwoNumbers(47,52)
+                    loadpecentage  = incrementalValuegen(47,52,min)
                 }
             
                 else if(hr==="10"){
-                    loadpecentage  = randomBetweenTwoNumbers(42,45)
+                    loadpecentage  = incrementalValuegen(42,45,min)
                 }
                 else if(hr==="11"){
-                    loadpecentage  = randomBetweenTwoNumbers(45,52)
+                    loadpecentage  = incrementalValuegen(45,52,min)
                 }
             }
 
@@ -501,50 +506,50 @@ async function TagsGeneration(){
             else{
 
                 if(hr==="12"){
-                    loadpecentage  = randomBetweenTwoNumbers(50,55)
+                    loadpecentage  = incrementalValuegen(50,55,min)
                 }
             
                 else if(hr==="1"){
-                    loadpecentage  = randomBetweenTwoNumbers(55,60)
+                    loadpecentage  = incrementalValuegen(55,60,min)
                 }
             
                 else if(hr==="2"){
-                    loadpecentage  = randomBetweenTwoNumbers(50,55)
+                    loadpecentage  = incrementalValuegen(50,55,min)
                 }
             
                 else if(hr==="3"){
-                    loadpecentage  = randomBetweenTwoNumbers(45,50)
+                    loadpecentage  = incrementalValuegen(45,50,min)
                 }
             
                 else if(hr==="4"){
-                    loadpecentage  = randomBetweenTwoNumbers(53,58)
+                    loadpecentage  = incrementalValuegen(53,58,min)
                 }
             
                 else if(hr==="5"){
-                    loadpecentage  = randomBetweenTwoNumbers(60,70)
+                    loadpecentage  = incrementalValuegen(60,70,min)
                 }
             
                 else if(hr==="6"){
-                    loadpecentage  = randomBetweenTwoNumbers(70,75)
+                    loadpecentage  = incrementalValuegen(70,75,min)
                 }
             
                 else if(hr==="7"){
-                    loadpecentage  = randomBetweenTwoNumbers(65,70)
+                    loadpecentage  = incrementalValuegen(65,70,min)
                 }
             
                 else if(hr==="8"){
-                    loadpecentage  = randomBetweenTwoNumbers(55,60)
+                    loadpecentage  = incrementalValuegen(55,60,min)
                 }
             
                 else if(hr==="9"){
-                    loadpecentage  = randomBetweenTwoNumbers(47,55)
+                    loadpecentage  = incrementalValuegen(47,55,min)
                 }
             
                 else if(hr==="10"){
-                    loadpecentage  = randomBetweenTwoNumbers(42,47)
+                    loadpecentage  = incrementalValuegen(42,47,min)
                 }
                 else if(hr==="11"){
-                    loadpecentage  = randomBetweenTwoNumbers(38,45)
+                    loadpecentage  = incrementalValuegen(38,45,min)
                 }
             }
             
@@ -1045,7 +1050,7 @@ export function ChangeFanbankStatus(status){
 }
 
 
-const socket  = socketIOClient(process.env.SOCKET_URL)
+const socket  = socketIOClient("http://127.0.0.1:8000/notify")
 socket.on("success",(arg)=>socket.disconnect())
 
 export {ChangeValues,SocketActivation,SocketDeactivate,GetValues,changeDgaValues,getPresentPort,ChangeAmbTemp,GetNameplateValues,changeNameplate}
@@ -1067,7 +1072,7 @@ const interval = setInterval(()=>getApiAndEmit(socket),1000)
 
 // getApiAndEmit(socket)
 
-app.listen((+process.env.API_PORT)+(+No),console.log("app is listening on ",(+process.env.API_PORT)+(+No)))
+app.listen((9000)+(+No),console.log("app is listening on ",(9000)+(+No)))
 
 
 

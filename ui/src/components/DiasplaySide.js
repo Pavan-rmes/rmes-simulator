@@ -88,7 +88,7 @@ export function DiasplaySide({id}) {
   }, [value.status,value.runstatus]);
 
   useEffect(() => {
-    const ENDPOINT = `${API}:${8000}/notify`;
+    const ENDPOINT = `${API}:${8000}/notify${id}`;
     console.log(ENDPOINT)
     const socket = socketIOClient(ENDPOINT);
     socket.on(`FromAPI${id}`, data => {

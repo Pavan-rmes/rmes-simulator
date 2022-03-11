@@ -1006,7 +1006,7 @@ function GetValues(){
     return({regulation:voltageRegulation,
         port:modbusPort,
         automatic:automaticLoadGeneration,
-        loadpercentage:loadpecentage,
+        loadpercentage:loadpecentage.toFixed(2),
         C2H4:C2H4/100,CH4:CH4/100,C2H2:C2H2/100,CO2:CO2/100,C2H6:C2H6/100,O2:O2,CO:CO/100,MST:MST/100,H2:H2/100,
         loadFromCsv,topOilFromCsv
     })

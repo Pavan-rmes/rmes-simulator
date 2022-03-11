@@ -47,7 +47,7 @@ export function RealtimGraph({ id }) {
   const [displayValues, setDisplayValues] = useState([]);
   const [labels, setlabels] = useState([]);
   useEffect(() => {
-    const ENDPOINT = `${API}:${8000}/notify`;
+    const ENDPOINT = `${API}:${8000}/notify${id}`;
     console.log(ENDPOINT);
     const socket = socketIOClient(ENDPOINT);
     socket.on(`FromAPI${id}`, data => {

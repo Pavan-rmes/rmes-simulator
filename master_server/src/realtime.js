@@ -24,6 +24,19 @@ realTimeRouter.get("/",(req,res)=>{
 
 })
 
+realTimeRouter.get("/location",(req,res)=>{
+    const {id} = req.query
+    axios.get(`${trafoApi}:${9000+(+id)}/trafo/location`)
+    .then((data) => res.send(data.data))
+    .catch((err)=>res.send(err))
+})
+
+realTimeRouter.post("/location",express.json(),(req,res)=>{
+    const {id} = req.query
+    axios.post(`${trafoApi}:${9000+(+id)}/trafo/location`,req.body)
+    .then(()=>res.send({status:"success"}))
+})
+
 
 realTimeRouter.post("/dga",express.json(),(req,res)=>{
     const {id} = req.query

@@ -18,6 +18,11 @@ export function Location({ id }) {
       }).catch((err)=>console.log("cannot get the ambient temp"));
   }
   useEffect(()=>{
+    axios.get(`${API}:${9000}/trafo/location?id=${id}`)
+    .then((data)=>{
+      setZip(data.data.zipCode)
+      setCode(data.data.code)
+    })
     setInterval(()=>{
       getLocation()
     },1000*60*10)
@@ -41,7 +46,13 @@ export function Location({ id }) {
           value={zip} className="outline-none w-28 md:w-32 border-b-2 focus:border-b-blue-500" placeholder="zipcode" />
         </div>
       <button
-        onClick={() => getLocation()}
+        onClick={() =>{
+          getLocation()
+          console.log({locationCode:code,zipCode:zip})
+          axios.post(`${API}:${9000}/trafo/location?id=${id}`,{
+            locationCode:code,zipCode:zip
+          })
+        }}
         className="border border-green-500 mt-4 hover:text-white hover:bg-green-500 rounded-xl px-4 ">Save</button>
       </div>
       </div>

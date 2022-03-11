@@ -15,6 +15,9 @@ dotenv.config()
 app.use(cors())
 app.use("/trafo",realTimeRouter)
 
+let locationCode ="IN";
+let zipCode = 507002;
+
 let topOilTemp;
 let wndTemp;
 let loadPower;
@@ -1049,6 +1052,15 @@ export function ChangeFanbankStatus(status){
     updateRegisterValues()
 }
 
+
+export function getLocation(){
+    return({code:locationCode,zipCode})
+}
+
+export function changeLocation(loc){
+    locationCode = loc.locationCode;
+    zipCode = loc.zipCode
+}
 
 const socket  = socketIOClient("http://127.0.0.1:8000/notify")
 socket.on("success",(arg)=>socket.disconnect())

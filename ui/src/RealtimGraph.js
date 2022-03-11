@@ -78,7 +78,6 @@ function RealTimeData({ id, labels, displayValues, setlabels }) {
     let topoil =  displayValues.topOilTemp
     let date = new Date();
     if (topoil) {
-      console.log(topoil[0])
       if (data1.length > 15) {
         setData([...data1.filter((d, id) => id != 0), (topoil[0]) / 100]);
         setlabels([...labels.filter((d, id) => id != 0), date.toLocaleTimeString()]);

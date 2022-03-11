@@ -92,7 +92,6 @@ export function DiasplaySide({id}) {
     console.log(ENDPOINT)
     const socket = socketIOClient(ENDPOINT);
     socket.on(`FromAPI${id}`, data => {
-      console.log(data)
       setDisplayValues(data)
     });
     return () => socket.disconnect();

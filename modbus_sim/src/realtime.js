@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { SocketActivation,SocketDeactivate,changeDgaValues,ChangeValues,GetValues,getPresentPort,ChangeAmbTemp,changeNameplate,GetNameplateValues,getFanbankStatus,ChangeFanbankStatus } from "./index.js";
+import { SocketActivation,SocketDeactivate,changeLocation,getLocation,changeDgaValues,ChangeValues,GetValues,getPresentPort,ChangeAmbTemp,changeNameplate,GetNameplateValues,getFanbankStatus,ChangeFanbankStatus } from "./index.js";
 import express from "express";
 
 const realTimeRouter = Router();
@@ -22,6 +22,14 @@ realTimeRouter.post("/",express.json(),async (req,res)=>{
 
 realTimeRouter.get("/",(req,res)=>{
     res.send(GetValues())
+})
+
+realTimeRouter.get("/location",(req,res)=>{
+    res.send(getLocation())
+})
+
+realTimeRouter.post("/location",express.json(),(req,res)=>{
+    res.send(changeLocation(req.body))
 })
 
 realTimeRouter.post("/dga",express.json(),(req,res)=>{

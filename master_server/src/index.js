@@ -52,10 +52,10 @@ io.of("/notify").on("connection", (socket) => {
 
 trafoKeys.map((tx,id)=>{
   io.of(`/notify${tx}`).on("connection",(socket) => {
+    console.log("New client connected");
     let interval;
     interval = setInterval(() => {socket.emit(`FromAPI${tx}`,realTimeData[`Fromtx${tx}`])}, 1000);
     //Client disconnected
-    console.log("hello")
     socket.on("disconnect", () => {
       console.log("Client disconnected");
       clearInterval(interval);

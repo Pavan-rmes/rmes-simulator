@@ -29,7 +29,7 @@ export function Login() {
     if(isValid){
       localStorage.setItem("email",email)
       document.cookie = `email=${email};${expires};`
-      history.push("/trafo")
+      history.push("/assets")
     }
     else{
       setErrorMessg("Invalid Credentials")

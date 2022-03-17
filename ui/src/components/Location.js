@@ -8,25 +8,18 @@ export function Location({ id }) {
   const [zip, setZip] = useState(507002); 
   const [ambTemp,setAmbTemp] = useState(35)
   
-  function getLocation() {
-    axios.get(`http://api.openweathermap.org/data/2.5/weather?zip=${zip},${code}&appid=f91bb102f1b55828d75f21a6e4af9ab9`)
-      .then(data => {
-        axios.post(`${API}:${9000 + id}/trafo/ambtemp`, {
-          ambTemp: (+(data.data.main.temp) - 273).toFixed(2)
-        });
-        setAmbTemp((+(data.data.main.temp) - 273).toFixed(2))
-      }).catch((err)=>console.log("cannot get the ambient temp"));
-  }
-  useEffect(()=>{
+
+  function getLocationDetails(){
     axios.get(`${API}:${9000}/trafo/location?id=${id}`)
     .then((data)=>{
       setZip(data.data.zipCode)
       setCode(data.data.code)
-    })
-    setInterval(()=>{
-      getLocation()
-    },1000*60*10)
-    getLocation()},[])
+      setAmbTemp(data.data.ambientTemp)})
+  }
+
+  useEffect(()=>{
+    getLocationDetails()
+    },[])
   return (
     <div className="flex flex-wrap">
       <div>
@@ -47,8 +40,6 @@ export function Location({ id }) {
         </div>
       <button
         onClick={() =>{
-          getLocation()
-          console.log({locationCode:code,zipCode:zip})
           axios.post(`${API}:${9000}/trafo/location?id=${id}`,{
             locationCode:code,zipCode:zip
           })

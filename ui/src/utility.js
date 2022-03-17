@@ -1,9 +1,14 @@
+import tarfoImg from "./images/transformerModel1.jpg";
+import cableImg from "./images/cableModel1.jpg"
+
+
 // export const API = "http://183.83.219.20"
 // export const ws = "ws://183.83.219.20"
 // export const API = "http://127.0.0.1"
-// export const API = "http://192.168.60.167"
+export const API = "http://192.168.60.167"
 // export const API = "http://192.168.60.67"
-export const API = "http://192.168.60.89"
+// export const API = "http://192.168.60.89"
+
 
 
 export const CountryCodes = [
@@ -259,5 +264,12 @@ export const CountryCodes = [
     { code:"ZW",name:"Zimbabwe"},
 ]   
     
-    
+export function filterAsset(assetType){
+    if(assetType ==="Transformer" ){
+      return ["trafo",tarfoImg]
+    }
+    else if(assetType === "Cable"){
+      return ["cable",cableImg]
+    }
+  }  
 

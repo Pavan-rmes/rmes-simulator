@@ -120,13 +120,16 @@ let trafoName = `Trafo ${No}`
 let loadFromCsv = false;let topOilFromCsv = false;
 
 
+function getAmbientAtInterval() {
+    axios.get(`http://api.openweathermap.org/data/2.5/weather?zip=${zipCode},${locationCode}&appid=f91bb102f1b55828d75f21a6e4af9ab9`)
+      .then(data => {
+        ambientTemp = parseFloat((+(data.data.main.temp) - 273).toFixed(2))
+        console.log(ambientTemp,"ambient temp")
+      }).catch((err)=>console.log("cannot get the ambient temp"));
+}
+getAmbientAtInterval()
 
-
-axios.get(`http://api.openweathermap.org/data/2.5/weather?zip=507002,IN&appid=43aa700123b6e84a6be0c446132dd5fa`)
-.then(data => {
-    ambientTemp = parseFloat((+(data.data.main.temp) - 273).toFixed(2))
-}).catch((err)=>console.log("cannot get the ambient temp"))
-
+setInterval(()=>{getAmbientAtInterval()},1000*60*10)
 
 
 //This function converts befor giving it to holding registers
@@ -1054,12 +1057,14 @@ export function ChangeFanbankStatus(status){
 
 
 export function getLocation(){
-    return({code:locationCode,zipCode})
+    return({code:locationCode,zipCode,ambientTemp})
 }
+
 
 export function changeLocation(loc){
     locationCode = loc.locationCode;
-    zipCode = loc.zipCode
+    zipCode = loc.zipCode;
+    getAmbientAtInterval()
 }
 
 const socket  = socketIOClient("http://127.0.0.1:8000/notify")

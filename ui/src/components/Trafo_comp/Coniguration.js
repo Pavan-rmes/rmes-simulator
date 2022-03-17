@@ -1,8 +1,8 @@
 import React, { useContext } from "react";
 import {useState,useEffect } from 'react';
-import { API } from "../utility";
+import { API } from "../../utility";
 import axios from "axios";
-import { context } from "../App";
+import { context } from "../../App";
 
 export function Coniguration({id}) {
 

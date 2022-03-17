@@ -1,13 +1,13 @@
 import React from "react";
-import { API } from "../utility";
+import { API } from "../../utility";
 import axios from "axios";
 import { useEffect, useState } from 'react';
 
 
-export const nameplate = [{value:"Asset Name",units:"",sym:"name"},{value:"MVA",units:"MVA",sym:"lpow"},{value:"AMPERES",units:"A",sym:"rcurr"},{value:"LOAD VOLTAGE",units:"KV",sym:"lvol"},{value:"Oil Temp At Rated Load",units:"°C",sym:"toTemp"},{value:"Wdg Temp At Rated Load",units:"°C",sym:"wndTemp"},{value:"FREQUENCY",units:"Hz",sym:"fq"}]
 
 
-export function NamePlate({ id }) {
+export function NamePlate({ id,nameplate }) {
+  console.log(nameplate)
   const [rating, setRating] = useState(undefined);
   function sendRating() {
     axios.post(`${API}:${9000}/trafo/nameplate?id=${id}`, rating);

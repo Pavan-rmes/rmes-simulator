@@ -67,7 +67,7 @@ function RealTimeData({ id, labels, displayValues, setlabels }) {
     datasets: [
       {
         lineTension: 0.2,
-        label: 'top_oil_temp',
+        label: 'Ph A termination',
         data: data1,
         borderColor: 'rgb(255, 99, 132)',
         backgroundColor: 'rgba(255, 99, 132, 0.5)',

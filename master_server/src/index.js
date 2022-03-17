@@ -55,12 +55,12 @@ io.of("/notify").on("connection", (socket) => {
 
 class ClientConnection{
   // constructor(){}
-  connect(assetkeys,assetType) {
+  connect(assetkeys,assetType,dataStorage) {
     assetkeys.map((asset)=>{
       io.of(`/notify${asset}`).on("connection",(socket) => {
         console.log("New client connected");
         let interval;
-        interval = setInterval(() => {socket.emit(`FromAPI${asset}`,trafoRealTime[`${assetType}${asset}`])}, 1000);
+        interval = setInterval(() => {socket.emit(`FromAPI${asset}`,dataStorage[`${assetType}${asset}`])}, 1000);
         //Client disconnected
         socket.on("disconnect", () => {
           console.log("Client disconnected");
@@ -72,8 +72,8 @@ class ClientConnection{
 }
 
 const socketServer = new ClientConnection()
-socketServer.connect(trafoKeys,"Fromtx")
-socketServer.connect(cableKeys,"Fromcb")
+socketServer.connect(trafoKeys,"Fromtx",trafoRealTime)
+socketServer.connect(cableKeys,"Fromcb",cableRealTime)
 
 
 

@@ -8,6 +8,7 @@ import axios from "axios";
 import { context } from "../../App";
 
 function dispVal(displayValues,sub,ele){
+  //multplication with the function code
     return multiplywithFC(displayValues?displayValues[sub]:{},ele?.symbol,ele?.decimals)
 }
 
@@ -16,23 +17,26 @@ function Dividewithhun(displayValues,symbol,decimal=2){
   let calculatedVal = !decimal?Math.round(((+value)/100).toFixed(2)):((+value)/100).toFixed(2)
   return calculatedVal
 }
+
+
 function multiplywithFC(displayValues,symbol,decimal=2){
   let value = displayValues?displayValues[symbol]:NaN
   if (!value){
     return "NAN"
   }
   else{
-    let calculatedVal = !decimal?Math.round(((+value[0])*value[1]).toFixed(2)):((+value[0])*value[1]).toFixed(2)
+    let calculatedVal = Math.round(((+value[0])*value[1]).toFixed(2))
+    console.log(value,calculatedVal)
     return calculatedVal
   }
 }
 
 
-const trafo =  {
+const cable =  {
   termination:
-    [{name:"Ph A Termination",symbol:"topOilTemp",unit:"°C"},
-    {name:"Ph B Termination",symbol:"wndTemp",unit:"°C"},
-    {name:"Ph C Termination",symbol:"loadCurrent",unit:"°C"}],
+    [{name:"Ph A Termination",symbol:"phATerm",unit:"°C"},
+    {name:"Ph B Termination",symbol:"phBTerm",unit:"°C"},
+    {name:"Ph C Termination",symbol:"phCTerm",unit:"°C"}],
   joints:
     [{name:"Ph A Joint",unit:"°C",symbol:"FB1InletTemp"},
     {name:"Ph B Joint",unit:"°C",symbol:"FB1OutletTemp"},
@@ -52,14 +56,7 @@ const subSystems = [{name:"Termination",id:"termination"},{name:"Joints",id:"joi
 export function DiasplaySide({id}) {
   const [sub,setSub] = useState("termination")
   const [displayValues,setDisplayValues] = useState()
-  console.log(sub)
   const value = useContext(context)
-  useEffect(() => {
-    axios.get(`${API}:${9000}/trafo?id=${id}`)
-      .then((data) => {
-        console.log(data.data)
-      });
-  }, [value.status,value.runstatus]);
 
   useEffect(() => {
     const ENDPOINT = `${API}:${8000}/notify${id}`;
@@ -95,7 +92,7 @@ export function DiasplaySide({id}) {
           Present Values
         </div>
         <div className='display flex md:ml-10 mt-5 gap-x-14 gap-y-10 flex-wrap'>
-          {trafo[sub].map((ele,id)=>(
+          {cable[sub].map((ele,id)=>(
             <div key={id} className="flex flex-col items-center">
               <label>{ele?.name}</label>
               <p >{dispVal(displayValues,sub,ele)} {ele.unit}</p>     

@@ -4,9 +4,8 @@ import express from "express";
 import {Modbus,incrementalValuegen,sleep} from "./utility.js"
 import cors from "cors"
 import {cableRoute} from "./routes/cableRoute.js"
-// import axios from "axios";
-// import socketIOClient from "socket.io-client";
-// import realTimeRouter from "./realtime.js";
+import {masterServerAddress} from "./utility.js"
+import socketIOClient from "socket.io-client";
 
 export let RegMap=[];
 
@@ -210,6 +209,24 @@ function CalculateTags(){
     phCTerm = 40;
     updateRegisterValues();
 }
+
+
+const socket  = socketIOClient(masterServerAddress)
+
+const getApiAndEmit = socket=>{
+    const response = {
+        termination:{phATerm:[phATerm,1],phBTerm:[phBTerm,1],phCTerm:[phCTerm,1]}
+    }
+    socket.emit(`Fromcb${No}`,response)
+}
+
+
+const interval = setInterval(()=>getApiAndEmit(socket),1000)
+
+
+
+
+
 
 //nameplate api details 
 

@@ -1,5 +1,8 @@
 import { RegMap } from "./index.js"
 
+
+export const masterServerAddress = "http://127.0.0.1:8000/notify"
+
 export function convertToHex(num){
     let result 
     if(num <=15){

@@ -4,7 +4,7 @@ import { Coniguration } from "../components/Cable_comp/Coniguration";
 import { NamePlate } from "../components/Cable_comp/NamePlate";
 import { Location } from "../components/Location";
 import { useParams } from "react-router-dom/cjs/react-router-dom.min";
-import { RealtimGraph } from "../RealtimGraph";
+import { RealtimGraph } from "../components/Cable_comp/RealtimGraph";
 import { HomeButton } from "../components/HomeButton";
 import { context, LoadCurve } from "../App";
 
